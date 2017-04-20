@@ -3,6 +3,7 @@
 #include <mbgl/renderer/render_layer.hpp>
 #include <mbgl/style/layers/raster_layer_impl.hpp>
 #include <mbgl/style/layers/raster_layer_properties.hpp>
+#include <mbgl/renderer/bucket.hpp>
 
 namespace mbgl {
 
