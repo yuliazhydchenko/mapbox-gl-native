@@ -18,6 +18,11 @@ std::unique_ptr<Bucket> RenderBackgroundLayer::createBucket(const BucketParamete
     return nullptr;
 }
 
+bool RenderBackgroundLayer::updateImpl(Immutable<style::Layer::Impl> impl) {
+    std::swap(impl, baseImpl);
+    return false;
+}
+
 void RenderBackgroundLayer::transition(const TransitionParameters &parameters) {
     unevaluated = impl().paint.transition(parameters, std::move(unevaluated));
 }

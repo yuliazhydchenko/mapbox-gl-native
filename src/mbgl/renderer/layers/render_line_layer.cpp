@@ -19,6 +19,17 @@ std::unique_ptr<Bucket> RenderLineLayer::createBucket(const BucketParameters& pa
     return std::make_unique<LineBucket>(parameters, layers, impl().layout);
 }
 
+bool RenderLineLayer::updateImpl(Immutable<style::Layer::Impl> baseImpl_) {
+    auto impl_ = dynamicImmutableCast<style::LineLayer::Impl>(baseImpl_);
+    bool needsLayout = (
+        impl_->filter     != impl().filter ||
+        impl_->visibility != impl().visibility ||
+        impl_->layout     != impl().layout ||
+        impl_->paint.hasDataDrivenPropertyDifference(impl().paint));
+    baseImpl = impl_;
+    return needsLayout;
+}
+
 void RenderLineLayer::transition(const TransitionParameters& parameters) {
     unevaluated = impl().paint.transition(parameters, std::move(unevaluated));
 }

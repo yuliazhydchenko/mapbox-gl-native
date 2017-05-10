@@ -11,6 +11,7 @@ public:
     RenderFillLayer(Immutable<style::FillLayer::Impl>);
     ~RenderFillLayer() final = default;
 
+    bool updateImpl(Immutable<style::Layer::Impl>) override;
     void transition(const TransitionParameters&) override;
     void evaluate(const PropertyEvaluationParameters&) override;
     bool hasTransition() const override;

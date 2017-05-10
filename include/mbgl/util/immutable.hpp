@@ -108,10 +108,17 @@ private:
 
     template <class S> friend class Immutable;
     template <class S, class U> friend Immutable<S> staticImmutableCast(const Immutable<U>&);
+    template <class S, class U> friend Immutable<S> dynamicImmutableCast(const Immutable<U>&);
 };
 
 template <class S, class U>
 Immutable<S> staticImmutableCast(const Immutable<U>& u) {
+    return Immutable<S>(std::static_pointer_cast<const S>(u.ptr));
+}
+
+template <class S, class U>
+Immutable<S> dynamicImmutableCast(const Immutable<U>& u) {
+    (void)dynamic_cast<const S&>(*u); // Call for side effect of failure.
     return Immutable<S>(std::static_pointer_cast<const S>(u.ptr));
 }
 

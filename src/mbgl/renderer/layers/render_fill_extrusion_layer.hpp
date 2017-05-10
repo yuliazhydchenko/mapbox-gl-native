@@ -11,6 +11,7 @@ public:
     RenderFillExtrusionLayer(Immutable<style::FillExtrusionLayer::Impl>);
     ~RenderFillExtrusionLayer() final = default;
 
+    bool updateImpl(Immutable<style::Layer::Impl>) override;
     void transition(const TransitionParameters&) override;
     void evaluate(const PropertyEvaluationParameters&) override;
     bool hasTransition() const override;

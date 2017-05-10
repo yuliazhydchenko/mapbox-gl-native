@@ -26,6 +26,11 @@ public:
 
     virtual ~RenderLayer() = default;
 
+    // Returns a source ID if buckets for this layer need to be regenerated; i.e. if
+    // the filter, visibility, layout properties, or data-driven paint properties have
+    // changed.
+    virtual bool updateImpl(Immutable<style::Layer::Impl>) = 0;
+
     // Begin transitions for any properties that have changed since the last frame.
     virtual void transition(const TransitionParameters&) = 0;
 
@@ -71,7 +76,6 @@ public:
 
     // Private implementation
     Immutable<style::Layer::Impl> baseImpl;
-    void setImpl(Immutable<style::Layer::Impl>);
 
     friend std::string layoutKey(const RenderLayer&);
 
