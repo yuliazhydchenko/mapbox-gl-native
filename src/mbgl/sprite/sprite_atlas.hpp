@@ -48,10 +48,6 @@ public:
 
     void onSpriteLoaded();
 
-    void markAsLoaded() {
-        loaded = true;
-    }
-
     bool isLoaded() const {
         return loaded;
     }
@@ -62,8 +58,8 @@ public:
     void addImage(Immutable<style::Image::Impl>);
     void removeImage(const std::string&);
 
-    void getIcons(IconRequestor& requestor);
-    void removeRequestor(IconRequestor& requestor);
+    void getIcons(IconRequestor&, IconDependencies);
+    void removeRequestor(IconRequestor&);
 
     optional<SpriteAtlasElement> getIcon(const std::string& name);
     optional<SpriteAtlasElement> getPattern(const std::string& name);
