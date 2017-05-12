@@ -153,7 +153,7 @@ Map::Impl::Impl(Map& map_,
       contextMode(contextMode_),
       pixelRatio(pixelRatio_),
       programCacheDir(std::move(programCacheDir_)),
-      annotationManager(std::make_unique<AnnotationManager>(pixelRatio)),
+      annotationManager(std::make_unique<AnnotationManager>()),
       asyncInvalidate([this] {
           if (mode == MapMode::Continuous) {
               backend.invalidate();
@@ -278,8 +278,7 @@ void Map::Impl::render(View& view) {
 
         painter->render(*style,
                         frameData,
-                        view,
-                        annotationManager->getSpriteAtlas());
+                        view);
 
         painter->cleanup();
 
@@ -312,8 +311,7 @@ void Map::Impl::render(View& view) {
 
         painter->render(*style,
                         frameData,
-                        view,
-                        annotationManager->getSpriteAtlas());
+                        view);
 
         auto request = std::move(stillImageRequest);
         request->callback(nullptr);
