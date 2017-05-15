@@ -20,12 +20,17 @@ CollisionTile::CollisionTile(PlacementConfig config_) : config(std::move(config_
     rotationMatrix = { { angle_cos, -angle_sin, angle_sin, angle_cos } };
     reverseRotationMatrix = { { angle_cos, angle_sin, -angle_sin, angle_cos } };
 
-    // Stretch boxes in y direction to account for the map tilt.
-    const float _yStretch = 1.0f / std::cos(config.pitch);
+    perspectiveRatio = 1.0f + 0.5f * ((config.cameraToTileDistance / config.cameraToCenterDistance) - 1.0f);
+    minScale /= perspectiveRatio;
+    maxScale /= perspectiveRatio;
 
-    // The amount the map is squished depends on the y position.
-    // Sort of account for this by making all boxes a bit bigger.
-    yStretch = std::pow(_yStretch, 1.3f);
+    // We can only approximate here based on the y position of the tile
+    // The shaders calculate a more accurate "incidence_stretch"
+    // at render time to calculate an effective scale for collision
+    // purposes, but we still want to use the yStretch approximation
+    // here because we can't adjust the aspect ratio of the collision
+    // boxes at render time.
+    yStretch = util::max(1.0f, config.cameraToTileDistance / (config.cameraToCenterDistance * std::cos(config.pitch)));
 }
 
 
@@ -203,10 +208,19 @@ std::vector<IndexedSubfeature> CollisionTile::queryRenderedSymbols(const Geometr
     auto intersectsAtScale = [&] (const CollisionTreeBox& treeBox) -> bool {
         const CollisionBox& collisionBox = std::get<1>(treeBox);
         const auto anchor = util::matrixMultiply(rotationMatrix, collisionBox.anchor);
-        const int16_t x1 = anchor.x + collisionBox.x1 / scale;
-        const int16_t y1 = anchor.y + collisionBox.y1 / scale * yStretch;
-        const int16_t x2 = anchor.x + collisionBox.x2 / scale;
-        const int16_t y2 = anchor.y + collisionBox.y2 / scale * yStretch;
+        
+        // When the 'perspectiveRatio' is high, we're effectively underzooming
+        // the tile because it's in the distance.
+        // In order to detect collisions that only happen while underzoomed,
+        // we have to query a larger portion of the grid.
+        // This extra work is offset by having a lower 'maxScale' bound
+        // Note that this adjustment ONLY affects the bounding boxes
+        // in the grid. It doesn't affect the boxes used for the
+        // minPlacementScale calculations.
+        const int16_t x1 = anchor.x + (collisionBox.x1 / scale) * perspectiveRatio;
+        const int16_t y1 = anchor.y + (collisionBox.y1 / scale) * yStretch * perspectiveRatio;
+        const int16_t x2 = anchor.x + (collisionBox.x2 / scale) * perspectiveRatio;
+        const int16_t y2 = anchor.y + (collisionBox.y2 / scale) * yStretch * perspectiveRatio;
         auto bbox = GeometryCoordinates {
             { x1, y1 }, { x2, y1 }, { x2, y2 }, { x1, y2 }
         };
