@@ -8,6 +8,8 @@ const _ = require('lodash');
 require('../../../scripts/style-code');
 
 // Specification parsing //
+var light = spec.light;
+console.log(light);
 
 // Collect layer types from spec
 var layers = Object.keys(spec.layer.type.values).map((type) => {
@@ -224,6 +226,10 @@ global.supportsPropertyFunction = function (property) {
 };
 
 // Template processing //
+
+// Java + JNI Light (Peer model)
+const lightJava = ejs.compile(fs.readFileSync('platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/style/light.java.ejs', 'utf8'), {strict: true});
+writeIfModified(`platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/style/Light.java`, lightJava(light));
 
 // Java + JNI Layers (Peer model)
 const layerHpp = ejs.compile(fs.readFileSync('platform/android/src/style/layers/layer.hpp.ejs', 'utf8'), {strict: true});

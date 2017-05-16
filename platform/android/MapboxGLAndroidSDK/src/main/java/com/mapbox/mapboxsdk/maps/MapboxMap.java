@@ -39,6 +39,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.location.LocationSource;
 import com.mapbox.mapboxsdk.maps.widgets.MyLocationViewSettings;
+import com.mapbox.mapboxsdk.style.Light;
 import com.mapbox.mapboxsdk.style.layers.Filter;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.Source;
@@ -565,6 +566,14 @@ public final class MapboxMap {
    */
   public Projection getProjection() {
     return projection;
+  }
+
+  //
+  //
+  //
+
+  public Light getLight() {
+    return nativeMapView.getLight();
   }
 
   //

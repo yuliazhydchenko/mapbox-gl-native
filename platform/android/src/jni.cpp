@@ -45,6 +45,7 @@
 #include "style/functions/stop.hpp"
 #include "style/layers/layers.hpp"
 #include "style/sources/sources.hpp"
+#include "style/lights.hpp"
 
 namespace mbgl {
 namespace android {
@@ -153,6 +154,7 @@ void registerNatives(JavaVM *vm) {
     TransitionOptions::registerNative(env);
     registerNativeLayers(env);
     registerNativeSources(env);
+    registerNativeLights(env);
     Stop::registerNative(env);
     CategoricalStops::registerNative(env);
     ExponentialStops::registerNative(env);
