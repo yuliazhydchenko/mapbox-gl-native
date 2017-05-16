@@ -237,7 +237,7 @@ void GeometryTile::querySourceFeatures(
 }
 
 float GeometryTile::yStretch() const {
-    return collisionTile->yStretch;
+    return collisionTile.get() ? collisionTile->yStretch : 1.0f;
 }
 
 } // namespace mbgl
