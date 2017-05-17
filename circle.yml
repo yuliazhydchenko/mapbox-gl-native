@@ -4,10 +4,35 @@ workflows:
   version: 2
   default:
     jobs:
+      - clang-tidy
       - android-debug-arm-v7
       - android-release-all
 
 jobs:
+
+# ------------------------------------------------------------------------------
+  clang-tidy:
+    docker:
+      - image: mbgl/ci:r2-linux-clang-3.9
+    working_directory: /src
+    environment:
+      LIBSYSCONFCPUS: 6
+      JOBS: 6
+      BUILDTYPE: Debug
+    branches:
+      ignore:
+        - master
+    steps:
+      - checkout
+      - run:
+          name: Fetch 'origin/master' branch
+          command: git fetch origin master:refs/remotes/origin/master
+      - run:
+          name: Generate compilation database
+          command: make compdb
+      - run:
+          name: Run Clang checks
+          command: make check
 
 # ------------------------------------------------------------------------------
   android-debug-arm-v7:

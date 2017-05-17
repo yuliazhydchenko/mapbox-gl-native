@@ -70,21 +70,6 @@ after_success:
 
 matrix:
   include:
-    # Clang 3.9.0 / clang-{format,tidy} 4.0.0
-    - os: linux
-      sudo: required
-      dist: trusty
-      language: cpp
-      compiler: "check"
-      env: _CXX=clang++-3.9 _CC=clang-3.9
-      addons: *clang39
-      script:
-        - git fetch origin master:refs/remotes/origin/master
-        - make check
-      branches:
-        except:
-          - master
-
     # EGL - Node v4 - Clang 3.9 - Release
     - os: linux
       sudo: required
