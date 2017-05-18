@@ -36,7 +36,7 @@ SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect,
 SpriteAtlas::SpriteAtlas(Size size, float pixelRatio)
     : pixelSize(std::ceil(size.width * pixelRatio),
                 std::ceil(size.height * pixelRatio)),
-      padding(std::ceil(pixelRatio)),
+      padding(pixelRatio),
       bin(pixelSize.width, pixelSize.height),
       dirty(true) {
 }
