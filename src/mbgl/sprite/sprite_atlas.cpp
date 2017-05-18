@@ -18,21 +18,20 @@ static constexpr uint32_t padding = 1;
 
 SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect,
                                        const style::Image::Impl& image,
-                                       float pixelRatio)
-    : pos(rect),
-      sdf(image.sdf),
-      relativePixelRatio(image.pixelRatio / pixelRatio),
+                                       float atlasPixelRatio)
+    : sdf(image.sdf),
+      pixelRatio(image.pixelRatio),
       size {{
         image.image.size.width / image.pixelRatio,
         image.image.size.height / image.pixelRatio
       }},
       tl {{
-        static_cast<uint16_t>(rect.x + padding * pixelRatio),
-        static_cast<uint16_t>(rect.y + padding * pixelRatio),
+        static_cast<uint16_t>(rect.x + padding * atlasPixelRatio),
+        static_cast<uint16_t>(rect.y + padding * atlasPixelRatio),
       }},
       br {{
-        static_cast<uint16_t>(rect.x + padding * pixelRatio + image.image.size.width),
-        static_cast<uint16_t>(rect.y + padding * pixelRatio + image.image.size.height)
+        static_cast<uint16_t>(rect.x + padding * atlasPixelRatio + image.image.size.width),
+        static_cast<uint16_t>(rect.y + padding * atlasPixelRatio + image.image.size.height)
       }} {
 }
 

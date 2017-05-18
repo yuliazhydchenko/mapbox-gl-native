@@ -21,14 +21,19 @@ SymbolQuad getIconQuad(const Anchor& anchor,
                        const SymbolLayoutProperties::Evaluated& layout,
                        const float layoutTextSize,
                        const style::SymbolPlacementType placement, 
-                       const Shaping& shapedText) {
+                       const Shaping& shapedText,
+                       const float pixelRatio) {
     const SpriteAtlasElement& image = shapedIcon.image();
 
+    // TODO: all the border-based adjustments preserve existing behavior in rendering tests.
+    // However, I suspect the render tests themselves are incorrect, and the adjustments should
+    // all be removed.
     const float border = 1.0;
-    auto left = shapedIcon.left() - border;
-    auto right = left + image.pos.w / image.relativePixelRatio;
-    auto top = shapedIcon.top() - border;
-    auto bottom = top + image.pos.h / image.relativePixelRatio;
+
+    float left = shapedIcon.left() - border;
+    float right = left + image.size[0] + 2 * border * pixelRatio / image.pixelRatio;
+    float top = shapedIcon.top() - border;
+    float bottom = top + image.size[1] + 2 * border * pixelRatio / image.pixelRatio;
     Point<float> tl;
     Point<float> tr;
     Point<float> br;
@@ -92,7 +97,14 @@ SymbolQuad getIconQuad(const Anchor& anchor,
         br = util::matrixMultiply(matrix, br);
     }
 
-    return SymbolQuad { tl, tr, bl, br, image.pos, 0, 0, anchor.point, globalMinScale, std::numeric_limits<float>::infinity(), shapedText.writingMode };
+    Rect<uint16_t> textureRect {
+        static_cast<uint16_t>(image.tl[0] - border * pixelRatio),
+        static_cast<uint16_t>(image.tl[1] - border * pixelRatio),
+        static_cast<uint16_t>(image.br[0] - image.tl[0] + 2 * border * pixelRatio),
+        static_cast<uint16_t>(image.br[1] - image.tl[1] + 2 * border * pixelRatio)
+    };
+
+    return SymbolQuad { tl, tr, bl, br, textureRect, 0, 0, anchor.point, globalMinScale, std::numeric_limits<float>::infinity(), shapedText.writingMode };
 }
 
 struct GlyphInstance {

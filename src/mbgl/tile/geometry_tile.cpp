@@ -39,7 +39,8 @@ GeometryTile::GeometryTile(const OverscaledTileID& id_,
              ActorRef<GeometryTile>(*this, mailbox),
              id_,
              obsolete,
-             parameters.mode),
+             parameters.mode,
+             parameters.pixelRatio),
       glyphAtlas(glyphAtlas_),
       spriteAtlas(spriteAtlas_) {
 }

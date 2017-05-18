@@ -20,12 +20,10 @@ class Context;
 
 class SpriteAtlasElement {
 public:
-    SpriteAtlasElement(Rect<uint16_t>, const style::Image::Impl&, float pixelRatio);
+    SpriteAtlasElement(Rect<uint16_t>, const style::Image::Impl&, float atlasPixelRatio);
 
-    Rect<uint16_t> pos;
     bool sdf;
-
-    float relativePixelRatio;
+    float pixelRatio;
     std::array<float, 2> size;
     std::array<uint16_t, 2> tl;
     std::array<uint16_t, 2> br;
