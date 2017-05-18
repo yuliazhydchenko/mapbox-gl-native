@@ -28,7 +28,8 @@ public:
                    style::SymbolPlacementType iconPlacement,
                    const GlyphPositions& face,
                    const IndexedSubfeature&,
-                   const std::size_t featureIndex);
+                   const std::size_t featureIndex,
+                   const float pixelRatio);
 
     Point<float> point;
     uint32_t index;

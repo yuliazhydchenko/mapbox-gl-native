@@ -74,7 +74,7 @@ void Painter::renderSymbol(PaintParameters& parameters,
         const bool iconTransformed = values.rotationAlignment == AlignmentType::Map || state.getPitch() != 0;
         atlas.bind(bucket.sdfIcons || state.isChanging() || iconScaled || iconTransformed, context, 0);
 
-        const Size texsize = atlas.getSize();
+        const Size texsize = atlas.getPixelSize();
 
         if (bucket.sdfIcons) {
             if (values.hasHalo) {

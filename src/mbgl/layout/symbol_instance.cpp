@@ -21,7 +21,8 @@ SymbolInstance::SymbolInstance(Anchor& anchor,
                                const SymbolPlacementType iconPlacement,
                                const GlyphPositions& face,
                                const IndexedSubfeature& indexedFeature,
-                               const std::size_t featureIndex_) :
+                               const std::size_t featureIndex_,
+                               const float pixelRatio) :
     point(anchor.point),
     index(index_),
     hasText(shapedTextOrientations.first || shapedTextOrientations.second),
@@ -35,7 +36,7 @@ SymbolInstance::SymbolInstance(Anchor& anchor,
     // Create the quads used for rendering the icon and glyphs.
     if (addToBuffers) {
         if (shapedIcon) {
-            iconQuad = getIconQuad(anchor, *shapedIcon, line, layout, layoutTextSize, iconPlacement, shapedTextOrientations.first);
+            iconQuad = getIconQuad(anchor, *shapedIcon, line, layout, layoutTextSize, iconPlacement, shapedTextOrientations.first, pixelRatio);
         }
         if (shapedTextOrientations.first) {
             auto quads = getGlyphQuads(anchor, shapedTextOrientations.first, textBoxScale, line, layout, textPlacement, face);
