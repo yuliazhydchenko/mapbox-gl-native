@@ -20,7 +20,7 @@ class Context;
 
 class SpriteAtlasElement {
 public:
-    SpriteAtlasElement(Rect<uint16_t>, const style::Image::Impl&, float atlasPixelRatio);
+    SpriteAtlasElement(Rect<uint16_t>, const style::Image::Impl&, uint16_t padding);
 
     bool sdf;
     float pixelRatio;
@@ -71,9 +71,7 @@ public:
     // the texture is only bound when the data is out of date (=dirty).
     void upload(gl::Context&, gl::TextureUnit unit);
 
-    Size getSize() const;
     Size getPixelSize() const;
-    float getPixelRatio() const { return pixelRatio; }
 
     // Only for use in tests.
     const PremultipliedImage& getAtlasImage() const {
@@ -81,8 +79,8 @@ public:
     }
 
 private:
-    const Size size;
-    const float pixelRatio;
+    const Size pixelSize;
+    const uint16_t padding;
     bool loaded = false;
 
     struct Entry {
