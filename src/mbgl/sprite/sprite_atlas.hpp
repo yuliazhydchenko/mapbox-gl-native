@@ -1,10 +1,11 @@
 #pragma once
 
-#include <mbgl/geometry/binpack.hpp>
 #include <mbgl/gl/texture.hpp>
 #include <mbgl/util/noncopyable.hpp>
 #include <mbgl/util/optional.hpp>
 #include <mbgl/style/image.hpp>
+
+#include <mapbox/shelf-pack.hpp>
 
 #include <string>
 #include <set>
@@ -20,7 +21,7 @@ class Context;
 
 class SpriteAtlasElement {
 public:
-    SpriteAtlasElement(Rect<uint16_t>, const style::Image::Impl&, uint16_t padding);
+    SpriteAtlasElement(mapbox::Bin, const style::Image::Impl&, uint16_t padding);
 
     bool sdf;
     float pixelRatio;
@@ -39,7 +40,7 @@ public:
 
 class SpriteAtlas : public util::noncopyable {
 public:
-    SpriteAtlas(Size, float pixelRatio);
+    SpriteAtlas(float pixelRatio);
     ~SpriteAtlas();
 
     void onSpriteLoaded();
@@ -79,7 +80,6 @@ public:
     }
 
 private:
-    const Size pixelSize;
     const uint16_t padding;
     bool loaded = false;
 
@@ -90,17 +90,17 @@ private:
         // it must have two distinct entries in the texture. The one for the icon image has
         // a single pixel transparent border, and the one for the pattern image has a single
         // pixel border wrapped from the opposite side.
-        optional<Rect<uint16_t>> iconRect;
-        optional<Rect<uint16_t>> patternRect;
+        optional<mapbox::Bin> iconBin;
+        optional<mapbox::Bin> patternBin;
     };
 
-    optional<SpriteAtlasElement> getImage(const std::string& name, optional<Rect<uint16_t>> Entry::*rect);
-    void copy(const Entry&, optional<Rect<uint16_t>> Entry::*rect);
+    optional<SpriteAtlasElement> getImage(const std::string& name, optional<mapbox::Bin> Entry::*bin);
+    void copy(const Entry&, optional<mapbox::Bin> Entry::*bin);
     
     IconMap buildIconMap();
 
     std::unordered_map<std::string, Entry> entries;
-    BinPack<uint16_t> bin;
+    mapbox::ShelfPack shelfPack;
     PremultipliedImage image;
     mbgl::optional<gl::Texture> texture;
     bool dirty;

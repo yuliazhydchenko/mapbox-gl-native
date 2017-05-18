@@ -14,7 +14,7 @@
 
 namespace mbgl {
 
-SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect,
+SpriteAtlasElement::SpriteAtlasElement(mapbox::Bin bin,
                                        const style::Image::Impl& image,
                                        uint16_t padding)
     : sdf(image.sdf),
@@ -24,20 +24,24 @@ SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect,
         image.image.size.height / image.pixelRatio
       }},
       tl {{
-        static_cast<uint16_t>(rect.x + padding),
-        static_cast<uint16_t>(rect.y + padding),
+        static_cast<uint16_t>(bin.x + padding),
+        static_cast<uint16_t>(bin.y + padding),
       }},
       br {{
-        static_cast<uint16_t>(rect.x + padding + image.image.size.width),
-        static_cast<uint16_t>(rect.y + padding + image.image.size.height)
+        static_cast<uint16_t>(bin.x + padding + image.image.size.width),
+        static_cast<uint16_t>(bin.y + padding + image.image.size.height)
       }} {
 }
 
-SpriteAtlas::SpriteAtlas(Size size, float pixelRatio)
-    : pixelSize(std::ceil(size.width * pixelRatio),
-                std::ceil(size.height * pixelRatio)),
-      padding(pixelRatio),
-      bin(pixelSize.width, pixelSize.height),
+static mapbox::ShelfPack::ShelfPackOptions shelfPackOptions() {
+    mapbox::ShelfPack::ShelfPackOptions options;
+    options.autoResize = true;
+    return options;
+}
+
+SpriteAtlas::SpriteAtlas(float pixelRatio)
+    : padding(pixelRatio),
+      shelfPack(64, 64, shelfPackOptions()),
       dirty(true) {
 }
 
@@ -67,12 +71,12 @@ void SpriteAtlas::addImage(Immutable<style::Image::Impl> image_) {
 
     entry.image = std::move(image_);
 
-    if (entry.iconRect) {
-        copy(entry, &Entry::iconRect);
+    if (entry.iconBin) {
+        copy(entry, &Entry::iconBin);
     }
 
-    if (entry.patternRect) {
-        copy(entry, &Entry::patternRect);
+    if (entry.patternBin) {
+        copy(entry, &Entry::patternBin);
     }
 }
 
@@ -84,12 +88,12 @@ void SpriteAtlas::removeImage(const std::string& id) {
 
     Entry& entry = it->second;
 
-    if (entry.iconRect) {
-        bin.release(*entry.iconRect);
+    if (entry.iconBin) {
+//        shelfPack.release(*iconBin);
     }
 
-    if (entry.patternRect) {
-        bin.release(*entry.patternRect);
+    if (entry.patternBin) {
+//        shelfPack.release(*patternBin);
     }
 
     entries.erase(it);
@@ -119,16 +123,14 @@ void SpriteAtlas::removeRequestor(IconRequestor& requestor) {
 }
 
 optional<SpriteAtlasElement> SpriteAtlas::getIcon(const std::string& id) {
-    return getImage(id, &Entry::iconRect);
+    return getImage(id, &Entry::iconBin);
 }
 
 optional<SpriteAtlasElement> SpriteAtlas::getPattern(const std::string& id) {
-    return getImage(id, &Entry::patternRect);
+    return getImage(id, &Entry::patternBin);
 }
 
-optional<SpriteAtlasElement> SpriteAtlas::getImage(const std::string& id,
-                                                   optional<Rect<uint16_t>> Entry::*entryRect) {
-
+optional<SpriteAtlasElement> SpriteAtlas::getImage(const std::string& id, optional<mapbox::Bin> Entry::*entryBin) {
     auto it = entries.find(id);
     if (it == entries.end()) {
         if (!entries.empty()) {
@@ -139,10 +141,10 @@ optional<SpriteAtlasElement> SpriteAtlas::getImage(const std::string& id,
 
     Entry& entry = it->second;
 
-    if (entry.*entryRect) {
+    if (entry.*entryBin) {
         assert(entry.image.get());
         return SpriteAtlasElement {
-            *(entry.*entryRect),
+            *(entry.*entryBin),
             *entry.image,
             padding
         };
@@ -151,45 +153,52 @@ optional<SpriteAtlasElement> SpriteAtlas::getImage(const std::string& id,
     const uint16_t width = entry.image->image.size.width + 2 * padding;
     const uint16_t height = entry.image->image.size.height + 2 * padding;
 
-    Rect<uint16_t> rect = bin.allocate(width, height);
-    if (rect.w == 0) {
+    optional<mapbox::Bin> bin = shelfPack.packOne(width, height);
+    if (!bin) {
         if (debug::spriteWarnings) {
             Log::Warning(Event::Sprite, "sprite atlas bitmap overflow");
         }
         return {};
     }
 
-    entry.*entryRect = rect;
-    copy(entry, entryRect);
+    entry.*entryBin = bin;
+    copy(entry, entryBin);
 
     return SpriteAtlasElement {
-        rect,
+        *bin,
         *entry.image,
         padding
     };
 }
 
 Size SpriteAtlas::getPixelSize() const {
-    return pixelSize;
+    return Size {
+        static_cast<uint32_t>(const_cast<mapbox::ShelfPack&>(shelfPack).width()),
+        static_cast<uint32_t>(const_cast<mapbox::ShelfPack&>(shelfPack).height())
+    };
 }
 
-void SpriteAtlas::copy(const Entry& entry, optional<Rect<uint16_t>> Entry::*entryRect) {
+void SpriteAtlas::copy(const Entry& entry, optional<mapbox::Bin> Entry::*entryBin) {
     if (!image.valid()) {
         image = PremultipliedImage(getPixelSize());
         image.fill(0);
+    } else if (image.size != getPixelSize()) {
+        PremultipliedImage newImage(getPixelSize());
+        PremultipliedImage::copy(image, newImage, { 0, 0 }, { 0, 0 }, image.size);
+        image = std::move(newImage);
     }
 
     const PremultipliedImage& src = entry.image->image;
-    const Rect<uint16_t>& rect = *(entry.*entryRect);
+    const mapbox::Bin& bin = *(entry.*entryBin);
 
-    const uint32_t x = rect.x + padding;
-    const uint32_t y = rect.y + padding;
+    const uint32_t x = bin.x + padding;
+    const uint32_t y = bin.y + padding;
     const uint32_t w = src.size.width;
     const uint32_t h = src.size.height;
 
     PremultipliedImage::copy(src, image, { 0, 0 }, { x, y }, { w, h });
 
-    if (entryRect == &Entry::patternRect) {
+    if (entryBin == &Entry::patternBin) {
         // Add 1 pixel wrapped padding on each side of the image.
         PremultipliedImage::copy(src, image, { 0, h - 1 }, { x, y - 1 }, { w, 1 }); // T
         PremultipliedImage::copy(src, image, { 0,     0 }, { x, y + h }, { w, 1 }); // B

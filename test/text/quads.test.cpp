@@ -13,7 +13,7 @@ TEST(getIconQuads, normal) {
     SymbolLayoutProperties::Evaluated layout;
     Anchor anchor(2.0, 3.0, 0.0, 0.5f, 0);
     SpriteAtlasElement image = {
-        Rect<uint16_t>( 0, 0, 15, 11 ),
+        mapbox::Bin(15, 11, 0, 0),
         style::Image::Impl("test", PremultipliedImage({1,1}), 1.0),
         1
     };
@@ -44,7 +44,7 @@ TEST(getIconQuads, normal) {
 TEST(getIconQuads, style) {
     Anchor anchor(0.0, 0.0, 0.0, 0.5f, 0);
     SpriteAtlasElement image = {
-        Rect<uint16_t>( 0, 0, 20, 20 ),
+        mapbox::Bin(20, 20, 0, 0),
         style::Image::Impl("test", PremultipliedImage({1,1}), 1.0),
         1
     };
