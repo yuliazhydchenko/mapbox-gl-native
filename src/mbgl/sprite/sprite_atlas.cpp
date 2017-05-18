@@ -16,20 +16,24 @@ namespace mbgl {
 
 static constexpr uint32_t padding = 1;
 
-SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect_,
+SpriteAtlasElement::SpriteAtlasElement(Rect<uint16_t> rect,
                                        const style::Image::Impl& image,
                                        float pixelRatio)
-    : pos(std::move(rect_)),
+    : pos(rect),
       sdf(image.sdf),
       relativePixelRatio(image.pixelRatio / pixelRatio),
-      size{{image.image.size.width / image.pixelRatio,
-            image.image.size.height / image.pixelRatio}} {
-
-    const float w = image.image.size.width / pixelRatio;
-    const float h = image.image.size.height / pixelRatio;
-
-    tl = {{ float(pos.x + padding),     float(pos.y + padding)     }};
-    br = {{ float(pos.x + padding + w), float(pos.y + padding + h) }};
+      size {{
+        image.image.size.width / image.pixelRatio,
+        image.image.size.height / image.pixelRatio
+      }},
+      tl {{
+        static_cast<uint16_t>(rect.x + padding * pixelRatio),
+        static_cast<uint16_t>(rect.y + padding * pixelRatio),
+      }},
+      br {{
+        static_cast<uint16_t>(rect.x + padding * pixelRatio + image.image.size.width),
+        static_cast<uint16_t>(rect.y + padding * pixelRatio + image.image.size.height)
+      }} {
 }
 
 SpriteAtlas::SpriteAtlas(Size size_, float pixelRatio_)
@@ -167,10 +171,20 @@ optional<SpriteAtlasElement> SpriteAtlas::getImage(const std::string& id,
     };
 }
 
+Size SpriteAtlas::getSize() const {
+    return size;
+}
+
+Size SpriteAtlas::getPixelSize() const {
+    return {
+        static_cast<uint32_t>(std::ceil(size.width * pixelRatio)),
+        static_cast<uint32_t>(std::ceil(size.height * pixelRatio))
+    };
+}
+
 void SpriteAtlas::copy(const Entry& entry, optional<Rect<uint16_t>> Entry::*entryRect) {
     if (!image.valid()) {
-        image = PremultipliedImage({ static_cast<uint32_t>(std::ceil(size.width * pixelRatio)),
-                                     static_cast<uint32_t>(std::ceil(size.height * pixelRatio)) });
+        image = PremultipliedImage(getPixelSize());
         image.fill(0);
     }
 

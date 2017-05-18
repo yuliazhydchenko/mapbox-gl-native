@@ -27,8 +27,8 @@ public:
 
     float relativePixelRatio;
     std::array<float, 2> size;
-    std::array<float, 2> tl;
-    std::array<float, 2> br;
+    std::array<uint16_t, 2> tl;
+    std::array<uint16_t, 2> br;
 };
 
 using IconMap = std::unordered_map<std::string, SpriteAtlasElement>;
@@ -74,7 +74,8 @@ public:
     // the texture is only bound when the data is out of date (=dirty).
     void upload(gl::Context&, gl::TextureUnit unit);
 
-    Size getSize() const { return size; }
+    Size getSize() const;
+    Size getPixelSize() const;
     float getPixelRatio() const { return pixelRatio; }
 
     // Only for use in tests.
