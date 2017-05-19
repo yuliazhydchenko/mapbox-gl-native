@@ -8,6 +8,7 @@ workflows:
       - android-debug-arm-v7
       - android-release-all
       - node6-clang39-release
+      - node6-clang39-debug
 
 jobs:
 
@@ -164,6 +165,47 @@ jobs:
       LIBSYSCONFCPUS: 6
       JOBS: 6
       BUILDTYPE: Release
+      WITH_EGL: 1
+      PACKAGE_JSON_VERSION: $(node -e "console.log(require('./package.json').version)")
+      PUBLISH: $("${CIRCLE_BRANCH}" == "node-v${PACKAGE_JSON_VERSION}" ]] && echo true)
+    steps:
+      - checkout
+      - run:
+          name: Build node
+          command: make node
+      - run:
+          name: Run node tests
+          command: |
+            source scripts/circle_helper.sh
+            source scripts/circle_setup.sh
+            #mapbox_install_logbt
+            mapbox_export_mesa_library_path
+            # DISPLAY=:0 ./logbt -- xvfb-run --server-args="-screen 0 1024x768x24" \
+            DISPLAY=:0 xvfb-run --server-args="-screen 0 1024x768x24" \
+              $(scripts/mason.sh PREFIX apitrace VERSION 6a30de1)/bin/apitrace trace --api=egl -v make test-node
+#      - run:
+#          name: Publish render-test results
+#          command: |
+#            ./platform/node/scripts/after_script.sh ${CIRCLE_BUILD_NUM}
+#      - run:
+#          name: Post-success commands
+#          command: |
+#            ./platform/node/scripts/after_success.sh
+#      - run:
+#          name: Post-failures commands
+#          when: on_fail
+#          command: |
+#            aws s3 cp . s3://mapbox/mapbox-gl-native/render-tests/${CIRCLE_BUILD_NUM} --recursive --exclude "*" --include "*.trace"
+
+# ------------------------------------------------------------------------------
+  node6-clang39-debug:
+    docker:
+      - image: mbgl/ci:r2-linux-clang-3.9
+    working_directory: /src
+    environment:
+      LIBSYSCONFCPUS: 6
+      JOBS: 6
+      BUILDTYPE: Debug
       WITH_EGL: 1
       PACKAGE_JSON_VERSION: $(node -e "console.log(require('./package.json').version)")
       PUBLISH: $("${CIRCLE_BRANCH}" == "node-v${PACKAGE_JSON_VERSION}" ]] && echo true)
