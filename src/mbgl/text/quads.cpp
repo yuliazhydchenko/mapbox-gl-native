@@ -25,9 +25,12 @@ SymbolQuad getIconQuad(const Anchor& anchor,
                        const float pixelRatio) {
     const SpriteAtlasElement& image = shapedIcon.image();
 
-    // TODO: all the border-based adjustments preserve existing behavior in rendering tests.
-    // However, I suspect the render tests themselves are incorrect, and the adjustments should
-    // all be removed.
+    // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
+    // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
+    // on one edge in some cases.
+    //
+    // TODO: These calculations are more complex than they probably need to be, and may conceal off-by-one
+    // errors.
     const float border = 1.0;
 
     float left = shapedIcon.left() - border;
