@@ -9,6 +9,7 @@ workflows:
       - android-release-all
       - node6-clang39-release
       - node6-clang39-debug
+      - linux-gcc5-debug-coverage
 
 jobs:
 
@@ -237,3 +238,39 @@ jobs:
 #          when: on_fail
 #          command: |
 #            aws s3 cp . s3://mapbox/mapbox-gl-native/render-tests/${CIRCLE_BUILD_NUM} --recursive --exclude "*" --include "*.trace"
+
+# ------------------------------------------------------------------------------
+  linux-gcc5-debug-coverage:
+    docker:
+      - image: mbgl/ci:r2-linux-gcc-5
+    working_directory: /src
+    environment:
+      LIBSYSCONFCPUS: 6
+      JOBS: 2
+      BUILDTYPE: Debug
+      WITH_EGL: 1
+      WITH_COVERAGE: 1
+    steps:
+      - checkout
+      - run:
+          name: Build linux
+          command: make linux
+      - run:
+          name: Build benchmark
+          command: make benchmark
+      - run:
+          name: Build test
+          command: make test
+      - run:
+          name: Run tests
+          command: |
+            source scripts/circle_helper.sh
+            source scripts/circle_setup.sh
+            mapbox_export_mesa_library_path
+            DISPLAY=:0 xvfb-run --server-args="-screen 0 1024x768x24" make run-test
+      - run:
+          name: Upload coverage results to coveralls
+          command: |
+            source scripts/circle_helper.sh
+            source scripts/circle_setup.sh
+            platform/linux/scripts/coveralls.sh

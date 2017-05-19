@@ -99,21 +99,6 @@ matrix:
       after_failure:
         - aws s3 cp . s3://mapbox/mapbox-gl-native/render-tests/$TRAVIS_JOB_NUMBER --recursive --exclude "*" --include "*.trace"
 
-    # EGL - GCC 5 - Debug (Coverage)
-    - os: linux
-      sudo: required
-      dist: trusty
-      language: cpp
-      compiler: "egl-gcc5-debug"
-      env: BUILDTYPE=Debug _CXX=g++-5 _CC=gcc-5 WITH_COVERAGE=1 WITH_EGL=1
-      addons: *gcc5
-      before_script:
-        - mapbox_start_xvfb
-        - mapbox_export_mesa_library_path
-      after_script:
-        - ccache --show-stats
-        - ./platform/linux/scripts/coveralls.sh
-
     # EGL - Clang 3.9 - Debug
     - os: linux
       sudo: required
