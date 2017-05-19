@@ -90,11 +90,17 @@ style::SymbolPropertyValues RenderSymbolLayer::iconPropertyValues(const style::S
             1.0f,
             evaluated.get<style::IconHaloColor>().constantOr(Color::black()).a > 0 &&
             evaluated.get<style::IconHaloWidth>().constantOr(1),
-            evaluated.get<style::IconColor>().constantOr(Color::black()).a > 0
+            evaluated.get<style::IconColor>().constantOr(Color::black()).a > 0,
+            10.0f
     };
 }
 
 style::SymbolPropertyValues RenderSymbolLayer::textPropertyValues(const style::SymbolLayoutProperties::PossiblyEvaluated& layout_) const {
+    const bool limitMaxDistance =
+        layout_.get<style::SymbolPlacement>() == style::SymbolPlacementType::Line
+        && layout_.get<style::TextRotationAlignment>() == style::AlignmentType::Map
+        && layout_.get<style::TextPitchAlignment>() == style::AlignmentType::Viewport;
+    
     return style::SymbolPropertyValues {
             layout_.get<style::TextPitchAlignment>(),
             layout_.get<style::TextRotationAlignment>(),
@@ -105,7 +111,8 @@ style::SymbolPropertyValues RenderSymbolLayer::textPropertyValues(const style::S
             24.0f,
             evaluated.get<style::TextHaloColor>().constantOr(Color::black()).a > 0 &&
             evaluated.get<style::TextHaloWidth>().constantOr(1),
-            evaluated.get<style::TextColor>().constantOr(Color::black()).a > 0
+            evaluated.get<style::TextColor>().constantOr(Color::black()).a > 0,
+            limitMaxDistance ? 1.5f : 10.0f
     };
 }
 
