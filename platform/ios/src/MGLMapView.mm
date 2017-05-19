@@ -874,8 +874,8 @@ public:
     
     // logo bug
     self.logoView.frame = {
-        self.contentInset.left+5,
-        CGRectGetHeight(self.bounds)-5-self.contentInset.bottom-CGRectGetHeight(self.logoView.bounds),
+        self.contentInset.left+8,
+        CGRectGetHeight(self.bounds)-8-self.contentInset.bottom-CGRectGetHeight(self.logoView.bounds),
         CGRectGetWidth(self.logoView.bounds),
         CGRectGetHeight(self.logoView.bounds)
     };
