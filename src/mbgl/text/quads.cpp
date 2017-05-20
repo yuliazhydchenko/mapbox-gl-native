@@ -22,21 +22,18 @@ SymbolQuad getIconQuad(const Anchor& anchor,
                        const float layoutTextSize,
                        const style::SymbolPlacementType placement, 
                        const Shaping& shapedText,
-                       const float pixelRatio) {
+                       const float) {
     const SpriteAtlasElement& image = shapedIcon.image();
 
     // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
     // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
     // on one edge in some cases.
-    //
-    // TODO: These calculations are more complex than they probably need to be, and may conceal off-by-one
-    // errors.
     const float border = 1.0;
 
-    float left = shapedIcon.left() - border;
-    float right = left + image.size[0] + 2 * border * pixelRatio / image.pixelRatio;
-    float top = shapedIcon.top() - border;
-    float bottom = top + image.size[1] + 2 * border * pixelRatio / image.pixelRatio;
+    float left = shapedIcon.left() - border / image.pixelRatio;
+    float right = left + image.size[0] + 2 * border / image.pixelRatio;
+    float top = shapedIcon.top() - border / image.pixelRatio;
+    float bottom = top + image.size[1] + 2 * border / image.pixelRatio;
     Point<float> tl;
     Point<float> tr;
     Point<float> br;
@@ -101,10 +98,10 @@ SymbolQuad getIconQuad(const Anchor& anchor,
     }
 
     Rect<uint16_t> textureRect {
-        static_cast<uint16_t>(image.tl[0] - border * pixelRatio),
-        static_cast<uint16_t>(image.tl[1] - border * pixelRatio),
-        static_cast<uint16_t>(image.br[0] - image.tl[0] + 2 * border * pixelRatio),
-        static_cast<uint16_t>(image.br[1] - image.tl[1] + 2 * border * pixelRatio)
+        static_cast<uint16_t>(image.tl[0] - border),
+        static_cast<uint16_t>(image.tl[1] - border),
+        static_cast<uint16_t>(image.br[0] - image.tl[0] + 2 * border),
+        static_cast<uint16_t>(image.br[1] - image.tl[1] + 2 * border)
     };
 
     return SymbolQuad { tl, tr, bl, br, textureRect, 0, 0, anchor.point, globalMinScale, std::numeric_limits<float>::infinity(), shapedText.writingMode };
