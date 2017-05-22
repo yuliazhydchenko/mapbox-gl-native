@@ -177,7 +177,6 @@ jobs:
       - run:
           name: Run node tests
           command: |
-            source scripts/circle_helper.sh
             source scripts/circle_setup.sh
             #mapbox_install_logbt
             mapbox_export_mesa_library_path
@@ -218,7 +217,6 @@ jobs:
       - run:
           name: Run node tests
           command: |
-            source scripts/circle_helper.sh
             source scripts/circle_setup.sh
             #mapbox_install_logbt
             mapbox_export_mesa_library_path
@@ -264,13 +262,11 @@ jobs:
       - run:
           name: Run tests
           command: |
-            source scripts/circle_helper.sh
             source scripts/circle_setup.sh
             mapbox_export_mesa_library_path
             DISPLAY=:0 xvfb-run --server-args="-screen 0 1024x768x24" make run-test
       - run:
           name: Upload coverage results to coveralls
           command: |
-            source scripts/circle_helper.sh
             source scripts/circle_setup.sh
             platform/linux/scripts/coveralls.sh

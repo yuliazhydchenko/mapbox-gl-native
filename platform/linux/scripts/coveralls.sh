@@ -4,8 +4,7 @@ set -e
 set -o pipefail
 
 # Collect coverage data and save it into coverage.info
-mapbox_time "lcov_capture" \
-`scripts/mason.sh PREFIX lcov VERSION 1.12`/usr/bin/lcov \
+$(scripts/mason.sh PREFIX lcov VERSION 1.12)/usr/bin/lcov \
     --quiet \
     --capture \
     --no-external \
@@ -17,5 +16,4 @@ mapbox_time "lcov_capture" \
     --base-directory "build/linux-x86_64/${BUILDTYPE}" \
     --output-file "build/linux-x86_64/${BUILDTYPE}/coverage.info"
 
-mapbox_time "coveralls_upload" \
 coveralls-lcov "build/linux-x86_64/${BUILDTYPE}/coverage.info"
