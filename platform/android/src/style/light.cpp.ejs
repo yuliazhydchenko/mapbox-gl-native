@@ -1,0 +1,59 @@
+<%
+  const properties = locals.properties;
+-%>
+// This file is generated. Edit android/platform/scripts/generate-style-code.js, then run `make android-style-code`.
+
+#include <mbgl/map/map.hpp>
+#include "light.hpp"
+#include "conversion/transition_options.hpp"
+
+namespace mbgl {
+namespace android {
+
+Light::Light(mbgl::Map& map, mbgl::style::Light& coreLight) : light(coreLight) , map(&map) {
+}
+
+jni::Class<Light> Light::javaClass;
+
+jni::jobject* Light::createJavaPeer(jni::JNIEnv& env) {
+    static auto constructor = Light::javaClass.template GetConstructor<jni::jlong>(env);
+    return Light::javaClass.New(env, constructor, reinterpret_cast<jni::jlong>(this));
+}
+
+<% for (const property of properties) { -%>
+void Light::set<%- camelize(property.name) %>(jni::JNIEnv& env, <%- propertyValueType(property) %> property) {
+    light.set<%- camelize(property.name) %>(property);
+}
+
+<% if (property.transition) { -%>
+jni::Object<TransitionOptions> Light::get<%- camelize(property.name) %>Transition(jni::JNIEnv& env) {
+   using namespace mbgl::android::conversion;
+   mbgl::style::TransitionOptions options = light.get<%- camelize(property.name) %>Transition();
+   return *convert<jni::Object<TransitionOptions>>(env, options);
+}
+
+void Light::set<%- camelize(property.name) %>Transition(jni::JNIEnv&, jlong duration, jlong delay) {
+   mbgl::style::TransitionOptions options;
+   options.duration.emplace(mbgl::Milliseconds(duration));
+   options.delay.emplace(mbgl::Milliseconds(delay));
+   light.set<%- camelize(property.name) %>Transition(options);
+}
+
+<% } -%>
+<% } -%>
+void Light::registerNative(jni::JNIEnv& env) {
+    // Lookup the class
+    Light::javaClass = *jni::Class<Light>::Find(env).NewGlobalRef(env).release();
+
+#define METHOD(MethodPtr, name) jni::MakeNativePeerMethod<decltype(MethodPtr), (MethodPtr)>(name)
+    // Register the peer
+    jni::RegisterNativePeer<Light>(env, Light::javaClass, "nativePtr",<% for(var i = 0; i < properties.length; i++) {%>
+<% if (properties[i].transition) { -%>
+    METHOD(&Light::get<%- camelize(properties[i].name) %>Transition, "nativeGet<%- camelize(properties[i].name) %>Transition"),
+    METHOD(&Light::set<%- camelize(properties[i].name) %>Transition, "nativeSet<%- camelize(properties[i].name) %>Transition"),
+<% } -%>
+    METHOD(&Light::set<%- camelize(properties[i].name) %>, "nativeSet<%- camelize(properties[i].name) %>")<% if(i != (properties.length -1)) {-%>,<% } -%><% } -%>);
+}
+
+} // namespace android
+} // namespace mb

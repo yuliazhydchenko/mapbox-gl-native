@@ -1,3 +1,6 @@
+<%
+  const properties = locals.properties;
+-%>
 package com.mapbox.mapboxsdk.testapp.style;
 
 import android.graphics.Color;
@@ -67,86 +70,33 @@ public class LightTest extends BaseActivityTest {
     Assert.assertNotNull(light);
   }
 
+<% for (const property of properties) { -%>
+<% if (property.transition) { -%>
 
   @Test
-  public void testSetAnchor() {
+  public void test<%- camelize(property.name) %>Transition() {
     validateTestSetup();
     setupLayer();
-    Timber.i("anchor");
-    assertNotNull(light);
-
-    // Set and Get
-    light.setAnchor(anchor(ANCHOR_MAP));
-  }
-
-  @Test
-  public void testPositionTransition() {
-    validateTestSetup();
-    setupLayer();
-    Timber.i("positionTransitionOptions");
+    Timber.i("<%- property.name %>TransitionOptions");
     assertNotNull(light);
 
     // Set and Get
     TransitionOptions options = new TransitionOptions(300, 100);
-    light.setPositionTransition(options);
+    light.set<%- camelize(property.name) %>Transition(options);
   }
+<% } -%>
 
   @Test
-  public void testSetPosition() {
+  public void testSet<%- camelize(property.name) %>() {
     validateTestSetup();
     setupLayer();
-    Timber.i("position");
+    Timber.i("<%- property.name %>");
     assertNotNull(light);
 
     // Set and Get
-    light.setPosition(position(new Float[]{0f,0f,0f}));
+    light.set<%- camelize(property.name) %>(<%- camelizeWithLeadingLowercase(property.name) %>(<%- defaultValueJava(property) %>));
   }
-
-  @Test
-  public void testColorTransition() {
-    validateTestSetup();
-    setupLayer();
-    Timber.i("colorTransitionOptions");
-    assertNotNull(light);
-
-    // Set and Get
-    TransitionOptions options = new TransitionOptions(300, 100);
-    light.setColorTransition(options);
-  }
-
-  @Test
-  public void testSetColor() {
-    validateTestSetup();
-    setupLayer();
-    Timber.i("color");
-    assertNotNull(light);
-
-    // Set and Get
-    light.setColor(color("rgba(0, 0, 0, 1)"));
-  }
-
-  @Test
-  public void testIntensityTransition() {
-    validateTestSetup();
-    setupLayer();
-    Timber.i("intensityTransitionOptions");
-    assertNotNull(light);
-
-    // Set and Get
-    TransitionOptions options = new TransitionOptions(300, 100);
-    light.setIntensityTransition(options);
-  }
-
-  @Test
-  public void testSetIntensity() {
-    validateTestSetup();
-    setupLayer();
-    Timber.i("intensity");
-    assertNotNull(light);
-
-    // Set and Get
-    light.setIntensity(intensity(0.3f));
-  }
+<% } -%>
 
   private void setupLayer(){
     onView(withId(R.id.mapView)).perform(new ViewAction() {

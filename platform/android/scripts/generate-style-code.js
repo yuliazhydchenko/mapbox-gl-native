@@ -8,8 +8,13 @@ const _ = require('lodash');
 require('../../../scripts/style-code');
 
 // Specification parsing //
-var light = spec.light;
-console.log(light);
+const lightProperties = Object.keys(spec[`light`]).reduce((memo, name) => {
+  var property = spec[`light`][name];
+  property.name = name;
+  property['light-property'] = true;
+  memo.push(property);
+  return memo;
+}, []);
 
 // Collect layer types from spec
 var layers = Object.keys(spec.layer.type.values).map((type) => {
@@ -217,6 +222,53 @@ global.propertyValueDoc = function (property, value) {
     return doc;
 };
 
+global.isDataDriven = function (property) {
+  return property['property-function'] === true;
+};
+
+global.isLightProperty = function (property) {
+  return property['light-property'] === true;
+};
+
+global.propertyValueType = function (property) {
+  if (isDataDriven(property)) {
+    return `DataDrivenPropertyValue<${evaluatedType(property)}>`;
+  } else {
+    return `PropertyValue<${evaluatedType(property)}>`;
+  }
+};
+
+global.evaluatedType = function (property) {
+  if (/-translate-anchor$/.test(property.name)) {
+    return 'TranslateAnchorType';
+  }
+  if (/-(rotation|pitch|illumination)-alignment$/.test(property.name)) {
+    return 'AlignmentType';
+  }
+  if (/position/.test(property.name)) {
+    return 'Position';
+  }
+  switch (property.type) {
+  case 'boolean':
+    return 'bool';
+  case 'number':
+    return 'float';
+  case 'string':
+    return 'std::string';
+  case 'enum':
+    return (isLightProperty(property) ? 'Light' : '') + `${camelize(property.name)}Type`;
+  case 'color':
+    return `Color`;
+  case 'array':
+    if (property.length) {
+      return `std::array<${evaluatedType({type: property.value})}, ${property.length}>`;
+    } else {
+      return `std::vector<${evaluatedType({type: property.value})}>`;
+    }
+  default: throw new Error(`unknown type for ${property.name}`)
+  }
+};
+
 global.supportsZoomFunction = function (property) {
   return property['zoom-function'] === true;
 };
@@ -228,8 +280,14 @@ global.supportsPropertyFunction = function (property) {
 // Template processing //
 
 // Java + JNI Light (Peer model)
+const lightHpp = ejs.compile(fs.readFileSync('platform/android/src/style/light.hpp.ejs', 'utf8'), {strict: true});;
+const lightCpp = ejs.compile(fs.readFileSync('platform/android/src/style/light.cpp.ejs', 'utf8'), {strict: true});;
 const lightJava = ejs.compile(fs.readFileSync('platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/style/light.java.ejs', 'utf8'), {strict: true});
-writeIfModified(`platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/style/Light.java`, lightJava(light));
+const lightJavaUnitTests = ejs.compile(fs.readFileSync('platform/android/MapboxGLAndroidSDKTestApp/src/androidTest/java/com/mapbox/mapboxsdk/testapp/style/light.junit.ejs', 'utf8'), {strict: true});
+writeIfModified(`platform/android/src/style/light.hpp`, lightHpp({properties: lightProperties}));
+writeIfModified(`platform/android/src/style/light.cpp`, lightCpp({properties: lightProperties}));
+writeIfModified(`platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/style/Light.java`, lightJava({properties: lightProperties}));
+writeIfModified(`platform/android/MapboxGLAndroidSDKTestApp/src/androidTest/java/com/mapbox/mapboxsdk/testapp/style/LightTest.java`, lightJavaUnitTests({properties: lightProperties}));
 
 // Java + JNI Layers (Peer model)
 const layerHpp = ejs.compile(fs.readFileSync('platform/android/src/style/layers/layer.hpp.ejs', 'utf8'), {strict: true});
